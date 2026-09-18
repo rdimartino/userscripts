@@ -32,7 +32,6 @@ test('version hooks and releases', async (t) => {
     '.husky/pre-commit',
     'tsconfig.json',
     'README.md',
-    'src',
     'tooling',
   ]) {
     mkdirSync(dirname(join(repo, path)), { recursive: true });
@@ -76,6 +75,34 @@ test('version hooks and releases', async (t) => {
   const second = 'src/scripts/second.user.ts';
   const bump = (path) => edit(path, '0.1.0', '0.1.1');
 
+  // Keep release fixtures independent of the real collection of userscripts.
+  mkdirSync(join(repo, 'src/scripts'), { recursive: true });
+  mkdirSync(join(repo, 'src/shared'), { recursive: true });
+  write(
+    'src/shared/dom.ts',
+    `export function addStyle(css: string) {
+  const style = document.createElement('style');
+  style.textContent = css;
+  document.head.append(style);
+}
+`,
+  );
+  write(
+    example,
+    `// ==UserScript==
+// @name         Example userscript
+// @namespace    local.userscripts
+// @version      0.1.0
+// @match        https://example.com/*
+// @grant        none
+// ==/UserScript==
+
+import { addStyle } from '../shared/dom';
+
+addStyle('body { border-top: 4px solid rebeccapurple; }');
+`,
+  );
+
   git('init', '-b', 'main');
   git('config', 'user.name', 'Userscripts test');
   git('config', 'user.email', 'test@example.com');
@@ -85,6 +112,7 @@ test('version hooks and releases', async (t) => {
     read(example).replace('Example userscript', 'Second userscript'),
   );
   run('npm', ['run', 'prepare']);
+  run('npm', ['run', 'format']);
   git('add', '.');
   git('commit', '-m', 'Initial scripts'); // A real hook must accept the first commit.
   const baseline = git('rev-parse', 'HEAD');

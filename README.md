@@ -4,6 +4,19 @@ Small TypeScript Tampermonkey scripts, bundled individually with esbuild and
 built/published by GitHub Actions to GitHub Pages. Each script owns its version.
 Shared helpers are bundled into each script; `dist/` is generated and ignored by Git.
 
+## Scripts
+
+- **Nerf Instagram 1.3.0** preserves the original behavior: hides Reels navigation,
+  Explore thumbnails, and home-feed articles with exact `Follow`, `Sponsored`, or
+  `Ad` labels. It removes iframes and elements matching `section > main + div`.
+- **Nerf YouTube 0.2.0** removes Shorts shelves. The original broad section/grid
+  selectors are narrowed to Shorts so regular homepage recommendations remain.
+
+Both are TypeScript ports with shared DOM helpers and Prettier formatting. They
+retain their original names, namespaces, default execution timing, and immediate
+execution followed by a DOM child-list observer. Instagram's selectors and
+English label comparisons are unchanged.
+
 ## Setup
 
 ```sh
@@ -22,16 +35,15 @@ executed directly by Node. Installing dependencies enables the Git hooks.
 - `src/shared/` — reusable helpers imported by scripts.
 - `dist/` — standalone `.user.js` files, `.meta.js` update headers, and an install page.
 
-Copy `src/scripts/example.user.ts` to add a script. Use a lowercase, hyphenated
+Copy an entry in `src/scripts/` to add a script. Use a lowercase, hyphenated
 filename such as `clean-links.user.ts`. Edit its name, namespace, description,
 match patterns, and grants. Versions use `major.minor.patch`. Keep each script's
-namespace/name combination unique and stable for updates. The example adds a
-purple border on `https://example.com/`.
+namespace/name combination unique and stable for updates.
 
 Import shared helpers normally:
 
 ```ts
-import { addStyle } from '../shared/dom';
+import { destroyElements, observeChanges } from '../shared/dom';
 ```
 
 Tampermonkey API types are available. Add appropriate `@grant` entries when using
@@ -48,7 +60,7 @@ npm test             # Exercise hooks and releases in a temporary Git repository
 
 Prettier formats staged files on commit. VS Code also formats on save with the
 recommended Prettier extension. `npm run dev` rebuilds files but does not reload
-Tampermonkey. For local testing, paste `dist/example.user.js` into the Tampermonkey
+Tampermonkey. For local testing, paste `dist/nerf-instagram.user.js` into the Tampermonkey
 editor and reload the matching page.
 
 ## Version checks on commit
@@ -73,10 +85,10 @@ for a normal commit; Actions runs checks, tests, and a fresh build.
 Stage your edits, then name the script without `.user.ts`:
 
 ```sh
-git add src/scripts/example.user.ts
-npm run release -- example          # Patch bump, commit, push main
-npm run release -- example minor
-npm run release -- example major
+git add src/scripts/nerf-instagram.user.ts
+npm run release -- nerf-instagram          # Patch bump, commit, push main
+npm run release -- nerf-instagram minor
+npm run release -- nerf-instagram major
 ```
 
 The command formats staged files, checks the project, bumps the selected header,
@@ -94,7 +106,7 @@ npm run release -- all
 Use `--no-push` to create a release commit locally, including on a feature branch:
 
 ```sh
-npm run release -- example patch --no-push
+npm run release -- nerf-instagram patch --no-push
 ```
 
 Merge/push to `main` to publish. If pushing fails after the commit, retry

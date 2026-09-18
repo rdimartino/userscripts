@@ -1,0 +1,35 @@
+{
+  "name": "userscripts",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "26.x"
+  },
+  "scripts": {
+    "build": "node tooling/build.ts",
+    "dev": "node --watch --watch-path=src --watch-path=tooling tooling/build.ts",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tooling/tsconfig.json",
+    "test": "node --test test/*.test.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run typecheck && npm run format:check",
+    "check:staged": "node tooling/check-staged.ts",
+    "release": "node tooling/release.ts",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*": "prettier --write --ignore-unknown"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.1",
+    "@types/tampermonkey": "5.5.0",
+    "esbuild": "0.28.2",
+    "husky": "9.1.7",
+    "lint-staged": "17.5.1",
+    "prettier": "3.9.8",
+    "typescript": "7.0.2"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
+}

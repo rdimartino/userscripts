@@ -1,23 +1,32 @@
 # Userscripts
 
-Small TypeScript Tampermonkey scripts, bundled individually with esbuild and
-built/published by GitHub Actions to GitHub Pages. Each script owns its version.
-Shared helpers are bundled into each script; `dist/` is generated and ignored by Git.
+Tampermonkey scripts to make Instagram and YouTube less distracting.
+
+## Install
+
+1. Install [Tampermonkey](https://www.tampermonkey.net/) for your browser.
+2. Choose an **Install** link below.
+3. Click **Install** in the Tampermonkey tab that opens, then reload Instagram or
+   YouTube to start using the script.
+
+On Chrome or Edge, also follow Tampermonkey's
+[instructions for enabling userscripts](https://www.tampermonkey.net/faq.php?q=Q209).
+You can enable, disable, or remove scripts from the Tampermonkey dashboard.
 
 ## Scripts
 
-- **Nerf Instagram 1.3.0** preserves the original behavior: hides Reels navigation,
-  Explore thumbnails, and home-feed articles with exact `Follow`, `Sponsored`, or
-  `Ad` labels. It removes iframes and elements matching `section > main + div`.
-- **Nerf YouTube 0.2.0** removes Shorts shelves. The original broad section/grid
-  selectors are narrowed to Shorts so regular homepage recommendations remain.
+| Script             | What it does                                                                                  | Install                                                                    |
+| ------------------ | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| **Nerf Instagram** | Hide Reels navigation, Explore content, suggested posts, and ads so you can focus on friends. | [Install](https://rdimartino.github.io/userscripts/nerf-instagram.user.js) |
+| **Nerf YouTube**   | Hide Shorts while keeping regular video recommendations.                                      | [Install](https://rdimartino.github.io/userscripts/nerf-youtube.user.js)   |
 
-Both are TypeScript ports with shared DOM helpers and Prettier formatting. They
-retain their original names, namespaces, default execution timing, and immediate
-execution followed by a DOM child-list observer. Instagram's selectors and
-English label comparisons are unchanged.
+## Development
 
-## Setup
+Scripts are written in TypeScript and bundled individually with esbuild. Shared
+helpers are included in each standalone script. GitHub Actions builds and publishes
+them to GitHub Pages; `dist/` is generated and ignored by Git.
+
+### Setup
 
 ```sh
 nvm install
@@ -29,7 +38,7 @@ npm run build
 Node 26 is selected by `.nvmrc`. Build and release tools are also TypeScript,
 executed directly by Node. Installing dependencies enables the Git hooks.
 
-## Development
+### Working on scripts
 
 - `src/scripts/*.user.ts` — one entry point per script, with a Tampermonkey header.
 - `src/shared/` — reusable helpers imported by scripts.
@@ -63,7 +72,7 @@ recommended Prettier extension. `npm run dev` rebuilds files but does not reload
 Tampermonkey. For local testing, paste `dist/nerf-instagram.user.js` into the Tampermonkey
 editor and reload the matching page.
 
-## Version checks on commit
+### Version checks on commit
 
 The pre-commit hook checks **staged** headers against `HEAD`:
 
@@ -80,7 +89,7 @@ not automatically choose a new version. Edit and stage the header yourself, or
 use the release command below. No local build or committed `dist/` is required
 for a normal commit; Actions runs checks, tests, and a fresh build.
 
-## Release changes
+### Release changes
 
 Stage your edits, then name the script without `.user.ts`:
 
@@ -114,7 +123,9 @@ Merge/push to `main` to publish. If pushing fails after the commit, retry
 fails after the version edit, the edits remain available: fix the issue, build,
 stage, and commit without bumping a second time.
 
-## GitHub Pages
+### GitHub Pages
+
+The installation links above become available after the first deployment.
 
 1. Create a GitHub repository and add it as `origin`.
 2. In **Settings → Pages → Build and deployment → Source**, choose **GitHub Actions**.

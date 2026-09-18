@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Nerf YouTube
 // @namespace    http://tampermonkey.net/
-// @version      0.2.0
-// @description  Hide YouTube Shorts
+// @version      0.2.1
+// @description  Hide Shorts, Playables, and other distracting YouTube feed sections
 // @author       You
 // @match        https://www.youtube.com/*
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
@@ -12,10 +12,11 @@
 import { destroyElements, observeChanges } from '../shared/dom';
 
 function nerf(): void {
-  // Target Shorts shelves instead of removing entire recommendation sections/grids.
   destroyElements([
     'ytd-reel-shelf-renderer',
     'ytd-rich-shelf-renderer[is-shorts]',
+    'ytd-rich-section-renderer',
+    'ytd-rich-grid-group',
   ]);
 }
 

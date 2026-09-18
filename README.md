@@ -1,17 +1,39 @@
 # Userscripts
 
-Tampermonkey scripts to make Instagram and YouTube less distracting.
+Tampermonkey scripts for less distracting browsing.
 
 ## Install
 
 1. Install [Tampermonkey](https://www.tampermonkey.net/) for your browser.
 2. Choose an **Install** link below.
-3. Click **Install** in the Tampermonkey tab that opens, then reload Instagram or
-   YouTube to start using the script.
+3. Click **Install** in the Tampermonkey tab that opens.
 
 On Chrome or Edge, also follow Tampermonkey's
 [instructions for enabling userscripts](https://www.tampermonkey.net/faq.php?q=Q209).
 You can enable, disable, or remove scripts from the Tampermonkey dashboard.
+
+### iOS (Safari)
+
+1. Install [Tampermonkey from the App Store](https://apps.apple.com/app/tampermonkey/id6738342400).
+2. Open **Settings → Apps → Safari → Extensions → Tampermonkey** and turn on
+   **Allow Extension**. See [Apple's extension setup guide](https://support.apple.com/guide/iphone/get-extensions-iphab0432bf6/ios).
+3. Open an **Install** link below in Safari. Allow Tampermonkey access to
+   `rdimartino.github.io` when prompted, then reload the page if needed.
+4. If Tampermonkey shows an installation prompt, tap **Install**. Allow it access
+   to the websites where you want the script to run.
+
+If Safari displays the JavaScript source instead, or Tampermonkey reports that it
+cannot load the script URL, install it manually:
+
+1. On the script's page in Safari, **Select All** the JavaScript and **Copy** it.
+2. Open **Tampermonkey** from Safari's extensions menu, then open **Dashboard**.
+3. Choose **Create a new script (+)**, delete the entire starter template, and
+   paste the copied code.
+4. **Save** the script, grant access to its websites if prompted, and reload the
+   page you want to use it on.
+
+Scripts run on websites opened in Safari. Support for mobile layouts depends on
+the individual script.
 
 ## Scripts
 

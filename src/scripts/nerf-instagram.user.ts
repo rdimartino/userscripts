@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Nerf Instagram
 // @namespace    http://tampermonkey.net/
-// @version      1.3.0
+// @version      1.3.1
 // @description  Keep up with friends without endless scrolling
 // @author       You
 // @match        https://www.instagram.com/*
@@ -34,25 +34,23 @@ function hideExploreAndReels(): void {
     hideElements(['main > div div:has(> div > a[href^="/p/"])']);
   }
 
-  if (window.location.pathname === '/') {
-    document
-      .querySelectorAll<HTMLElement>('main article')
-      .forEach((article) => {
-        if (
-          Array.from(article.querySelectorAll('div[role="button"]')).some(
-            (button) => button.textContent === 'Follow',
-          ) ||
-          Array.from(article.querySelectorAll('span')).some(
-            (label) =>
-              label.textContent === 'Sponsored' ||
-              label.textContent === 'Ad' ||
-              label.textContent === 'Suggested for you',
-          )
-        ) {
-          article.style.visibility = 'hidden';
-        }
-      });
-  }
+  // The feed can remain visible while Instagram keeps a post/comments URL.
+  document.querySelectorAll<HTMLElement>('main article').forEach((article) => {
+    if (
+      (window.location.pathname === '/' &&
+        Array.from(article.querySelectorAll('div[role="button"]')).some(
+          (button) => button.textContent === 'Follow',
+        )) ||
+      Array.from(article.querySelectorAll('span')).some(
+        (label) =>
+          label.textContent === 'Sponsored' ||
+          label.textContent === 'Ad' ||
+          label.textContent === 'Suggested for you',
+      )
+    ) {
+      article.style.visibility = 'hidden';
+    }
+  });
 }
 
 observeChanges(hideExploreAndReels);

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Nerf Instagram
 // @namespace    http://tampermonkey.net/
-// @version      1.3.1
+// @version      1.3.2
 // @description  Keep up with friends without endless scrolling
 // @author       You
 // @match        https://www.instagram.com/*
@@ -36,7 +36,13 @@ function hideExploreAndReels(): void {
 
   // The feed can remain visible while Instagram keeps a post/comments URL.
   document.querySelectorAll<HTMLElement>('main article').forEach((article) => {
+    // Match the repost badge beside an avatar, not the regular Repost action.
+    const repostBadge = article.querySelector(
+      'span[role="link"]:has(> img) + div > svg[aria-label="Repost"]',
+    );
+
     if (
+      repostBadge ||
       (window.location.pathname === '/' &&
         Array.from(article.querySelectorAll('div[role="button"]')).some(
           (button) => button.textContent === 'Follow',

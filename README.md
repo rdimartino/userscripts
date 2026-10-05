@@ -106,10 +106,12 @@ The pre-commit hook checks **staged** headers against `HEAD`:
   namespace/name preserves version history.
 - Unrelated changes, such as documentation, do not require version bumps.
 
-An unstaged bump cannot satisfy the check. The hook validates versions; it does
-not automatically choose a new version. Edit and stage the header yourself, or
-use the release command below. No local build or committed `dist/` is required
-for a normal commit; Actions runs checks, tests, and a fresh build.
+An unstaged bump cannot satisfy the check. The hook only validates versions;
+the release command below owns version increments. Keep existing `@version`
+headers unchanged during development, and do not manually bump them to satisfy
+the hook. Pre-bumping before a release would increment the version twice.
+Generated `dist/` files are not committed; Actions runs checks, tests, and a fresh
+build.
 
 ### Release changes
 

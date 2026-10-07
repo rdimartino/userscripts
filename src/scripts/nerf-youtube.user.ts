@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Nerf YouTube
 // @namespace    http://tampermonkey.net/
-// @version      0.3.2
+// @version      0.3.3
 // @description  Open Shorts and Mix videos individually, disable standalone autoplay, and hide distracting YouTube feeds
 // @author       You
 // @match        https://www.youtube.com/*
@@ -78,30 +78,51 @@ function navigateToVideo(
   window.location[method](destination.href);
 }
 
+const autoplayToggleSelector = '.ytp-autonav-toggle-button';
+const autoplayButtonSelector =
+  `button:has(${autoplayToggleSelector}), ` +
+  'button.ytm-autonav-toggle-button-container';
+
 function disableStandaloneAutoplay(): void {
   const url = new URL(window.location.href);
   if (url.pathname !== '/watch' || url.searchParams.has('list')) return;
 
   document
-    .querySelectorAll<HTMLElement>(
-      'button:has(.ytp-autonav-toggle-button[aria-checked="true"]), ' +
-        'button.ytm-autonav-toggle-button-container[aria-pressed="true"]',
-    )
+    .querySelectorAll<HTMLElement>(autoplayButtonSelector)
     .forEach((button) => {
+      const enabled =
+        button.getAttribute('aria-pressed') === 'true' ||
+        button.querySelector(`${autoplayToggleSelector}[aria-checked="true"]`);
       // Desktop initially renders a hidden, checked placeholder before loading
       // the real setting. Wait until the control is ready before clicking it.
-      if (button.getClientRects().length > 0) button.click();
+      if (enabled && button.getClientRects().length > 0) button.click();
     });
 }
 
-function nerf(): void {
-  const destination = standaloneDestination(window.location.href);
-  if (destination) {
-    navigateToVideo(destination);
-    return;
+function affectsAutoplay(mutation: MutationRecord): boolean {
+  if (mutation.type === 'childList' || mutation.attributeName === 'class') {
+    return true;
   }
+  // State and visibility changes matter only on the controls or their contents.
+  // In particular, ignore frequent progress-bar style changes.
+  return (
+    mutation.target instanceof HTMLElement &&
+    mutation.target.closest(autoplayButtonSelector) !== null
+  );
+}
 
-  disableStandaloneAutoplay();
+function observeAutoplay(): void {
+  new MutationObserver((mutations) => {
+    if (mutations.some(affectsAutoplay)) disableStandaloneAutoplay();
+  }).observe(document, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['class', 'style', 'aria-checked', 'aria-pressed'],
+  });
+}
+
+function removeDistractingFeeds(): void {
   destroyElements([
     'ytd-reel-shelf-renderer',
     'ytd-rich-shelf-renderer[is-shorts]',
@@ -112,23 +133,36 @@ function nerf(): void {
   ]);
 }
 
-function start(): void {
-  const destination = standaloneDestination(window.location.href);
-  if (destination) {
-    navigateToVideo(destination);
-    return;
-  }
+function observeFeeds(): void {
+  new MutationObserver(removeDistractingFeeds).observe(document, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['class', 'is-shorts'],
+  });
+}
 
+function installLinkNavigation(): void {
+  const cleanedLinks = new WeakMap<HTMLAnchorElement, URL>();
   // Intercept before YouTube can navigate using its cached playlist data.
   const openStandaloneVideo = (event: MouseEvent) => {
     const link = event
       .composedPath()
       .find((target) => target instanceof HTMLAnchorElement);
     if (!link || link.hasAttribute('download')) return;
-    const destination = standaloneDestination(link.href);
-    if (!destination) return;
+    // Context menus and new-tab gestures leave this anchor in the current page.
+    // Keep intercepting it, but let YouTube reuse the anchor for a different URL.
+    const remembered = cleanedLinks.get(link);
+    const destination =
+      standaloneDestination(link.href) ??
+      (remembered?.href === link.href ? remembered : null);
+    if (!destination) {
+      cleanedLinks.delete(link);
+      return;
+    }
 
     link.href = destination.href;
+    cleanedLinks.set(link, destination);
     if (event.type === 'contextmenu') return;
     event.stopImmediatePropagation();
     // Let the browser handle new-tab/window gestures using the cleaned URL.
@@ -148,7 +182,9 @@ function start(): void {
   window.addEventListener('click', openStandaloneVideo, true);
   window.addEventListener('auxclick', openStandaloneVideo, true);
   window.addEventListener('contextmenu', openStandaloneVideo, true);
+}
 
+function installHistoryNavigation(): void {
   // YouTube can change routes without loading a new document.
   for (const method of ['pushState', 'replaceState'] as const) {
     const original = window.history[method];
@@ -171,39 +207,43 @@ function start(): void {
       original.apply(this, args);
     };
   }
+}
 
-  window.addEventListener('popstate', nerf);
+function applyPageRules(): void {
+  const destination = standaloneDestination(window.location.href);
+  if (destination) {
+    navigateToVideo(destination);
+    return;
+  }
+
+  disableStandaloneAutoplay();
+  removeDistractingFeeds();
+}
+
+function installRouteListeners(): void {
+  window.addEventListener('popstate', applyPageRules);
   window.addEventListener('pageshow', () => {
     // A page restored from the back/forward cache can have an old redirect guard.
     redirecting = false;
-    nerf();
+    applyPageRules();
   });
-  window.addEventListener('yt-navigate-finish', nerf);
+  window.addEventListener('yt-navigate-finish', applyPageRules);
+}
 
-  nerf();
-  // At document-start, documentElement may not exist yet.
-  new MutationObserver((mutations) => {
-    // Ignore frequent progress-bar style changes; only autoplay control styles
-    // matter here. Keep the existing feed cleanup responsive to DOM/class edits.
-    if (
-      mutations.some(
-        (mutation) =>
-          mutation.attributeName !== 'style' ||
-          (mutation.target instanceof HTMLElement &&
-            mutation.target.matches(
-              'button[data-tooltip-target-id="ytp-autonav-toggle-button"], ' +
-                'button.ytm-autonav-toggle-button-container',
-            )),
-      )
-    ) {
-      nerf();
-    }
-  }).observe(document, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ['class', 'style', 'aria-checked', 'aria-pressed'],
-  });
+function start(): void {
+  const destination = standaloneDestination(window.location.href);
+  if (destination) {
+    navigateToVideo(destination);
+    return;
+  }
+
+  installLinkNavigation();
+  installHistoryNavigation();
+  installRouteListeners();
+  applyPageRules();
+  // Observe document because documentElement may not exist at document-start.
+  observeAutoplay();
+  observeFeeds();
 }
 
 start();

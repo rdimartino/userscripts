@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Nerf YouTube
 // @namespace    http://tampermonkey.net/
-// @version      0.3.0
-// @description  Block Shorts and hide distracting feed sections on desktop and mobile YouTube
+// @version      0.3.1
+// @description  Open Shorts in the regular player and hide distracting feed sections on desktop and mobile YouTube
 // @author       You
 // @match        https://www.youtube.com/*
 // @match        https://m.youtube.com/*
@@ -27,16 +27,28 @@ function isShortsUrl(value: string | URL): boolean {
   }
 }
 
-function leaveShorts(): void {
+function leaveShorts(value: string | URL = window.location.href): void {
   if (redirecting) return;
   redirecting = true;
+  const source = new URL(value, window.location.href);
+  const videoId = source.pathname.match(/^\/shorts\/([\w-]+)\/?$/)?.[1];
+  const destination = new URL(videoId ? '/watch' : '/', source.origin);
+  if (videoId) {
+    destination.searchParams.set('v', videoId);
+    // Keep playback timestamps, but omit playlist/feed parameters.
+    for (const param of ['t', 'start', 'end']) {
+      const timestamp = source.searchParams.get(param);
+      if (timestamp !== null) destination.searchParams.set(param, timestamp);
+    }
+    destination.hash = source.hash;
+  }
   window.stop();
   document
     .querySelectorAll<HTMLMediaElement>('video, audio')
     .forEach((media) => {
       media.pause();
     });
-  window.location.replace('/');
+  window.location.replace(destination.href);
 }
 
 function nerf(): void {
@@ -61,18 +73,18 @@ function start(): void {
     return;
   }
 
-  // Stop Shorts link clicks before YouTube's own navigation handler runs.
-  const blockShortsLink = (event: MouseEvent) => {
+  // Open individual Shorts without entering YouTube's scrolling Shorts player.
+  const openShortsVideo = (event: MouseEvent) => {
     const link = event
       .composedPath()
       .find((target) => target instanceof HTMLAnchorElement);
     if (!link || !isShortsUrl(link.href)) return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    leaveShorts();
+    leaveShorts(link.href);
   };
-  window.addEventListener('click', blockShortsLink, true);
-  window.addEventListener('auxclick', blockShortsLink, true);
+  window.addEventListener('click', openShortsVideo, true);
+  window.addEventListener('auxclick', openShortsVideo, true);
 
   // YouTube can change routes without loading a new document.
   for (const method of ['pushState', 'replaceState'] as const) {
@@ -86,7 +98,7 @@ function start(): void {
         isShortsUrl(url) &&
         new URL(url, location.href).origin === location.origin
       ) {
-        leaveShorts();
+        leaveShorts(url);
         return;
       }
       original.apply(this, args);

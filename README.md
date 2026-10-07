@@ -37,10 +37,15 @@ the individual script.
 
 ## Scripts
 
-| Script             | What it does                                                                                           | Install                                                                    |
-| ------------------ | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| **Nerf Instagram** | Hide Reels navigation, Explore content, reposts, suggested posts, and ads so you can focus on friends. | [Install](https://rdimartino.github.io/userscripts/nerf-instagram.user.js) |
-| **Nerf YouTube**   | Block Shorts and hide Playables and distracting feed sections on desktop and mobile.                   | [Install](https://rdimartino.github.io/userscripts/nerf-youtube.user.js)   |
+| Script             | What it does                                                                                            | Install                                                                    |
+| ------------------ | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| **Nerf Instagram** | Hide Reels navigation, Explore content, reposts, suggested posts, and ads so you can focus on friends.  | [Install](https://rdimartino.github.io/userscripts/nerf-instagram.user.js) |
+| **Nerf YouTube**   | Open individual Shorts in the regular player and hide Shorts, Playables, and distracting feed sections. | [Install](https://rdimartino.github.io/userscripts/nerf-youtube.user.js)   |
+
+Nerf YouTube opens direct Shorts links in the regular video player, so you can
+watch a shared Short without entering the scrolling Shorts feed. Links to the
+Shorts feed without a specific video still return to the homepage. This applies
+to both desktop and mobile YouTube in the browser.
 
 ## Development
 

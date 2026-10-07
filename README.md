@@ -37,15 +37,22 @@ the individual script.
 
 ## Scripts
 
-| Script             | What it does                                                                                            | Install                                                                    |
-| ------------------ | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| **Nerf Instagram** | Hide Reels navigation, Explore content, reposts, suggested posts, and ads so you can focus on friends.  | [Install](https://rdimartino.github.io/userscripts/nerf-instagram.user.js) |
-| **Nerf YouTube**   | Open individual Shorts in the regular player and hide Shorts, Playables, and distracting feed sections. | [Install](https://rdimartino.github.io/userscripts/nerf-youtube.user.js)   |
+| Script             | What it does                                                                                           | Install                                                                    |
+| ------------------ | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| **Nerf Instagram** | Hide Reels navigation, Explore content, reposts, suggested posts, and ads so you can focus on friends. | [Install](https://rdimartino.github.io/userscripts/nerf-instagram.user.js) |
+| **Nerf YouTube**   | Open Shorts and Mix videos individually, stop standalone autoplay, and hide distracting feed sections. | [Install](https://rdimartino.github.io/userscripts/nerf-youtube.user.js)   |
 
 Nerf YouTube opens direct Shorts links in the regular video player, so you can
 watch a shared Short without entering the scrolling Shorts feed. Links to the
 Shorts feed without a specific video still return to the homepage. This applies
 to both desktop and mobile YouTube in the browser.
+
+Automatic YouTube Mix links open just the selected video, preserving timestamps
+and removing the Mix queue. This also applies to direct links and in-page
+navigation. Regular playlists, including Watch Later, keep working. On standalone
+video pages, the script turns off YouTube's next-video Autoplay switch when it
+appears or is re-enabled; it does not change that switch while a regular playlist
+is open.
 
 ## Development
 

@@ -132,6 +132,35 @@ addStyle('body { border-top: 4px solid rebeccapurple; }');
     },
   );
 
+  await t.test('tooling and install-page edits need no script bump', () => {
+    edit(
+      'tooling/build.ts',
+      '<title>Userscripts</title>',
+      '<title>Install userscripts</title>',
+    );
+    write(
+      'tooling/check-staged.ts',
+      read('tooling/check-staged.ts') + '\n// Tooling-only change.\n',
+    );
+    git('add', 'tooling');
+    git('commit', '-m', 'Update install page and tooling');
+    assert.equal(git('diff', baseline, 'HEAD', '--', 'src'), '');
+    assert.equal(git('status', '--porcelain'), '');
+  });
+
+  await t.test('TypeScript tests need no script bump', () => {
+    mkdirSync(join(repo, 'test'));
+    write('test/helper.ts', 'export const fixture={ok:true};\n');
+    git('add', 'test');
+    git('commit', '-m', 'Add test helper');
+    assert.equal(
+      read('test/helper.ts'),
+      'export const fixture = { ok: true };\n',
+    );
+    assert.equal(git('diff', baseline, 'HEAD', '--', 'src'), '');
+    assert.equal(git('status', '--porcelain'), '');
+  });
+
   await t.test('script edits require a strictly higher staged version', () => {
     edit(example, 'rebeccapurple', 'purple');
     git('add', example);
@@ -147,14 +176,26 @@ addStyle('body { border-top: 4px solid rebeccapurple; }');
     reject(/must be greater than 0\.1\.0/);
   });
 
-  await t.test('an actual commit rejects a missing bump', () => {
-    edit(example, 'rebeccapurple', 'purple');
-    git('add', example);
-    const result = spawnSync('git', ['commit', '-m', 'Missing bump'], options);
-    assert.notEqual(result.status, 0);
-    assert.match(result.stdout + result.stderr, /Version check failed/);
-    assert.equal(git('rev-parse', 'HEAD'), baseline);
-  });
+  await t.test(
+    'a mixed tooling and script commit rejects a missing bump',
+    () => {
+      edit(example, 'rebeccapurple', 'purple');
+      edit(
+        'tooling/build.ts',
+        '<title>Userscripts</title>',
+        '<title>Install userscripts</title>',
+      );
+      git('add', example, 'tooling/build.ts');
+      const result = spawnSync(
+        'git',
+        ['commit', '-m', 'Missing bump'],
+        options,
+      );
+      assert.notEqual(result.status, 0);
+      assert.match(result.stdout + result.stderr, /Version check failed/);
+      assert.equal(git('rev-parse', 'HEAD'), baseline);
+    },
+  );
 
   await t.test('a valid partial commit preserves unstaged source', () => {
     bump(example);
@@ -183,6 +224,28 @@ addStyle('body { border-top: 4px solid rebeccapurple; }');
       check();
     },
   );
+
+  for (const change of ['add', 'delete', 'move']) {
+    await t.test(
+      `${change} runtime helper requires all scripts to increase`,
+      () => {
+        if (change === 'add') {
+          write('src/scripts/helper.ts', 'export const enabled = true;\n');
+          git('add', 'src/scripts/helper.ts');
+        } else if (change === 'delete') {
+          git('rm', 'src/shared/dom.ts');
+        } else {
+          git('mv', 'src/shared/dom.ts', 'tooling/dom.ts');
+        }
+        bump(example);
+        git('add', example);
+        reject(/second: @version 0\.1\.0/);
+        bump(second);
+        git('add', second);
+        check();
+      },
+    );
+  }
 
   await t.test(
     'new scripts need only an initial version; renames preserve history',

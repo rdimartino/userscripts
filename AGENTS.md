@@ -20,8 +20,12 @@
   release without publication; it still bumps the version and creates a release
   commit. A request to edit, test, or commit code alone does not authorize a
   release.
-- Use `all` instead of a script name when releasing shared/helper or tooling
-  TypeScript changes that require every script's version to increase.
+- Use `all` instead of a script name when releasing helper TypeScript changes
+  under `src/` that require every script's version to increase.
+- Tooling, webpage, test, and documentation changes do not automatically require
+  version bumps. Commit those changes with the hooks enabled. If a build or
+  configuration change affects shipped userscripts, release the affected scripts
+  explicitly.
 - If a release fails after changing a version, inspect its output, the diff, and
   commit history. Finish the remaining build/commit/push steps using the existing
   bump; do not rerun the release command and increment again. If only the push

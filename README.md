@@ -112,11 +112,13 @@ The pre-commit hook checks **staged** headers against `HEAD`:
 
 - Editing an existing script requires a strictly higher `@version`, including
   comment-only edits. Version downgrades are rejected.
-- Changing shared/helper or tooling TypeScript requires bumps for all existing
-  scripts. This simple rule covers added, modified, and deleted helpers.
+- Changing helper TypeScript under `src/` requires bumps for all existing scripts.
+  This includes added, modified, deleted, or moved helpers.
 - New scripts need a valid initial version. Renaming a script while retaining its
   namespace/name preserves version history.
-- Unrelated changes, such as documentation, do not require version bumps.
+- Tooling, install-page, test, and documentation changes do not automatically
+  require version bumps. If a build or configuration change affects shipped
+  userscripts, release the affected scripts explicitly.
 
 An unstaged bump cannot satisfy the check. The hook only validates versions;
 the release command below owns version increments. Keep existing `@version`

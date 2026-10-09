@@ -33,9 +33,10 @@ try {
   const changed = new Set(
     paths(git('diff', '--cached', '--name-only', '--no-renames', '-z')),
   );
-  // Shared/helper and tooling TypeScript use the simple "bump all" policy.
+  // Only runtime helpers under src/ trigger the shared-code version rule.
   const sharedChange = [...changed].some(
-    (path) => path.endsWith('.ts') && !isScript(path),
+    (path) =>
+      path.startsWith('src/') && path.endsWith('.ts') && !isScript(path),
   );
   const errors: string[] = [];
 

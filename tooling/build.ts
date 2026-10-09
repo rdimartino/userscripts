@@ -55,7 +55,7 @@ async function buildScripts() {
   </head>
   <body>
     <h1>Userscripts</h1>
-    <p>Install Tampermonkey, then select a script to install it.</p>
+    <p>Install <a href="https://www.tampermonkey.net/index.php">Tampermonkey</a>, then select a script to install it.</p>
     <ul>
 ${scripts
   .map(
